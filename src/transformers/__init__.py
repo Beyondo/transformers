@@ -3046,6 +3046,15 @@ else:
             "TFGPT2PreTrainedModel",
         ]
     )
+    _import_structure["models.gpt_neo"].extend(
+        [
+            "TFGPTNeoForCausalLM",
+            "TFGPTNeoForQuestionAnswering",
+            "TFGPTNeoForSequenceClassification",
+            "TFGPTNeoModel",
+            "TFGPTNeoPreTrainedModel",
+        ]
+    )
     _import_structure["models.gptj"].extend(
         [
             "TFGPTJForCausalLM",

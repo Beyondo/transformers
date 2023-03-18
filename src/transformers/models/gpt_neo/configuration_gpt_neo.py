@@ -37,11 +37,8 @@ class GPTNeoConfig(PretrainedConfig):
     Neo model according to the specified arguments, defining the model architecture. Instantiating a configuration with
     the defaults will yield a similar configuration to that of the GPTNeo
     [EleutherAI/gpt-neo-1.3B](https://huggingface.co/EleutherAI/gpt-neo-1.3B) architecture.
-
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
-
-
     Args:
         vocab_size (`int`, *optional*, defaults to 50257):
             Vocabulary size of the GPT Neo model. Defines the number of different tokens that can be represented by the
@@ -78,18 +75,13 @@ class GPTNeoConfig(PretrainedConfig):
         use_cache (`bool`, *optional*, defaults to `True`):
             Whether or not the model should return the last key/values attentions (not used by all models). Only
             relevant if `config.is_decoder=True`.
-
     Example:
-
     ```python
     >>> from transformers import GPTNeoConfig, GPTNeoModel
-
     >>> # Initializing a GPTNeo EleutherAI/gpt-neo-1.3B style configuration
     >>> configuration = GPTNeoConfig()
-
     >>> # Initializing a model (with random weights) from the EleutherAI/gpt-neo-1.3B style configuration
     >>> model = GPTNeoModel(configuration)
-
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
@@ -136,6 +128,18 @@ class GPTNeoConfig(PretrainedConfig):
         self.bos_token_id = bos_token_id
         self.eos_token_id = eos_token_id
 
+        # @Beyondo: For TF-compatibility
+        self.n_positions = max_position_embeddings
+        self.n_embd = hidden_size
+        self.n_layer = num_layers
+        self.n_head = num_heads
+        self.n_inner = intermediate_size
+        self.rotary_dim = window_size
+        self.resid_pdrop = resid_dropout
+        self.embd_pdrop = embed_dropout
+        self.attn_pdrop = attention_dropout
+        #
+        
         self.attention_types = attention_types
         self.attention_layers = self.expand_attention_types_params(attention_types)
 

@@ -36,6 +36,20 @@ else:
     ]
 
 try:
+    if not is_tf_available():
+        raise OptionalDependencyNotAvailable()
+except OptionalDependencyNotAvailable:
+    pass
+else:
+    _import_structure["modeling_tf_gpt_neo"] = [
+        "TFGPTNeoForCausalLM",
+        "TFGPTNeoForQuestionAnswering",
+        "TFGPTNeoForSequenceClassification",
+        "TFGPTNeoModel",
+        "TFGPTNeoPreTrainedModel",
+    ]
+
+try:
     if not is_flax_available():
         raise OptionalDependencyNotAvailable()
 except OptionalDependencyNotAvailable:
