@@ -558,7 +558,7 @@ class TFGPTNeoPreTrainedModel(TFPreTrainedModel):
         return self.serving_output(output)
 
 
-GPTNeo_START_DOCSTRING = r"""
+GPT_NEO_START_DOCSTRING = r"""
 
     This model inherits from [`TFPreTrainedModel`]. Check the superclass documentation for the generic methods the
     library implements for all its model (such as downloading or saving, resizing the input embeddings, pruning heads
@@ -600,7 +600,7 @@ GPTNeo_START_DOCSTRING = r"""
             configuration. Check out the [`~TFPreTrainedModel.from_pretrained`] method to load the model weights.
 """
 
-GPTNeo_INPUTS_DOCSTRING = r"""
+GPT_NEO_INPUTS_DOCSTRING = r"""
     Args:
         input_ids (`Numpy array` or `tf.Tensor` of shape `(batch_size, input_ids_length)`):
             `input_ids_length` = `sequence_length` if `past` is `None` else `past[0].shape[-2]` (`sequence_length` of
