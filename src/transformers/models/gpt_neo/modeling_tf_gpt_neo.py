@@ -386,7 +386,7 @@ class TFGPTNeoMainLayer(tf.keras.layers.Layer):
             config.vocab_size, config.hidden_size, initializer_range=config.initializer_range, name="wte"
         )
         self.drop = tf.keras.layers.Dropout(config.embd_pdrop)
-        self.h = [TFGPTNeoBlock(config, name=f"h_._{i}") for i in range(config.n_layer)]
+        self.h = [TFGPTNeoBlock(config, i, name=f"h_._{i}") for i in range(config.n_layer)]
         self.ln_f = tf.keras.layers.LayerNormalization(epsilon=config.layer_norm_epsilon, name="ln_f")
 
     def get_input_embeddings(self):
