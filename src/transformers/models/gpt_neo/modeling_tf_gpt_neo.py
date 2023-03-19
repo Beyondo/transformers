@@ -746,11 +746,10 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
 
     def __init__(self, config: GPTNeoConfig, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
-        self.transformer = TFGPTNeoModel(config)
-        self.lm_head = tf.keras.layers.Dense(config.vocab_size, name="lm_head")
-
-        # Initialize weights and apply final processing
-        self.post_init()
+        self.transformer = TFGPTNeoModel(config, name="transformer")
+        self.lm_head = tf.keras.layers.Dense(
+            config.vocab_size, kernel_initializer=get_initializer(config.initializer_range), name="lm_head"
+        )
 
     def get_output_embeddings(self):
         return self.lm_head
