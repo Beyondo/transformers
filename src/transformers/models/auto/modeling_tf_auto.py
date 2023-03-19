@@ -141,6 +141,7 @@ TF_MODEL_WITH_LM_HEAD_MAPPING_NAMES = OrderedDict(
         ("funnel", "TFFunnelForMaskedLM"),
         ("gpt-sw3", "TFGPT2LMHeadModel"),
         ("gpt2", "TFGPT2LMHeadModel"),
+        ("gpt_neo", "TFGPTNeoForCausalLM"),
         ("gptj", "TFGPTJForCausalLM"),
         ("layoutlm", "TFLayoutLMForMaskedLM"),
         ("led", "TFLEDForConditionalGeneration"),
