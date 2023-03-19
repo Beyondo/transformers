@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2021 The EleutherAI and HuggingFace Teams. All rights reserved.
+# Copyright 2021 The HuggingFace Inc. team. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,119 +12,115 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" GPT-J model configuration"""
+""" GPT Neo model configuration"""
+
 from collections import OrderedDict
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from ... import PreTrainedTokenizer, TensorType, is_torch_available
 from ...configuration_utils import PretrainedConfig
-from ...onnx import OnnxConfigWithPast, PatchingSpec
+from ...onnx import OnnxConfigWithPast
 from ...utils import logging
 
 
 logger = logging.get_logger(__name__)
 
-GPTJ_PRETRAINED_CONFIG_ARCHIVE_MAP = {
-    "EleutherAI/gpt-j-6B": "https://huggingface.co/EleutherAI/gpt-j-6B/resolve/main/config.json",
-    # See all GPT-J models at https://huggingface.co/models?filter=gpt_j
+GPT_NEO_PRETRAINED_CONFIG_ARCHIVE_MAP = {
+    "EleutherAI/gpt-neo-1.3B": "https://huggingface.co/EleutherAI/gpt-neo-1.3B/resolve/main/config.json",
+    # See all GPTNeo models at https://huggingface.co/models?filter=gpt_neo
 }
 
 
-class GPTJConfig(PretrainedConfig):
+class GPTNeoConfig(PretrainedConfig):
     r"""
-    This is the configuration class to store the configuration of a [`GPTJModel`]. It is used to instantiate a GPT-J
-    model according to the specified arguments, defining the model architecture. Instantiating a configuration with the
-    defaults will yield a similar configuration to that of the GPT-J
-    [EleutherAI/gpt-j-6B](https://huggingface.co/EleutherAI/gpt-j-6B) architecture. Configuration objects inherit from
-    [`PretrainedConfig`] and can be used to control the model outputs. Read the documentation from [`PretrainedConfig`]
-    for more information.
-
+    This is the configuration class to store the configuration of a [`GPTNeoModel`]. It is used to instantiate a GPT
+    Neo model according to the specified arguments, defining the model architecture. Instantiating a configuration with
+    the defaults will yield a similar configuration to that of the GPTNeo
+    [EleutherAI/gpt-neo-1.3B](https://huggingface.co/EleutherAI/gpt-neo-1.3B) architecture.
+    Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
+    documentation from [`PretrainedConfig`] for more information.
     Args:
-        vocab_size (`int`, *optional*, defaults to 50400):
-            Vocabulary size of the GPT-J model. Defines the number of different tokens that can be represented by the
-            `inputs_ids` passed when calling [`GPTJModel`].
-        n_positions (`int`, *optional*, defaults to 2048):
+        vocab_size (`int`, *optional*, defaults to 50257):
+            Vocabulary size of the GPT Neo model. Defines the number of different tokens that can be represented by the
+            `inputs_ids` passed when calling [`GPTNeoModel`]. Vocabulary size of the model. Defines the different
+            tokens that can be represented by the *inputs_ids* passed to the forward method of [`GPTNeoModel`].
+        attention_types (`List`, *optional*, defaults to `[[["global", "local"], 12]]`):
+            The type of attention for each layer in a `List` of the following format `[[["attention_type"],
+            num_layerss]]` e.g. for a 24 layer model `[[["global"], 24]]` or `[[["global", "local"], 12]]` Choose the
+            value of `attention_type` from `["global", "local"]`
+        hidden_size (`int`, *optional*, defaults to 2048):
+            Dimensionality of the encoder layers and the pooler layer.
+        num_layers (`int`, *optional*, defaults to 24):
+            Number of hidden layers in the Transformer encoder.
+        num_heads (`int`, *optional*, defaults to 16):
+            Number of attention heads for each attention layer in the Transformer encoder.
+        intermediate_size (`int`, *optional*, defaults to 8192):
+            Dimensionality of the "intermediate" (i.e., feed-forward) layer in the Transformer encoder.
+        activation_function (`str` or `function`, *optional*, defaults to `"gelu_new"`):
+            The non-linear activation function (function or string) in the encoder and pooler. If string, `"gelu"`,
+            `"relu"`, `"selu"` and `"gelu_new"` are supported.
+        embed_dropout (`float`, *optional*, defaults to 0.0):
+            The dropout probabilitiy for all fully connected layers in the embeddings, encoder, and pooler.
+        attention_dropout (`float`, *optional*, defaults to 0.0):
+            The dropout ratio for the attention probabilities.
+        max_position_embeddings (`int`, *optional*, defaults to 2048):
             The maximum sequence length that this model might ever be used with. Typically set this to something large
             just in case (e.g., 512 or 1024 or 2048).
-        n_embd (`int`, *optional*, defaults to 4096):
-            Dimensionality of the embeddings and hidden states.
-        n_layer (`int`, *optional*, defaults to 28):
-            Number of hidden layers in the Transformer encoder.
-        n_head (`int`, *optional*, defaults to 16):
-            Number of attention heads for each attention layer in the Transformer encoder.
-        rotary_dim (`int`, *optional*, defaults to 64):
-            Number of dimensions in the embedding that Rotary Position Embedding is applied to.
-        n_inner (`int`, *optional*, defaults to None):
-            Dimensionality of the inner feed-forward layers. `None` will set it to 4 times n_embd
-        activation_function (`str`, *optional*, defaults to `"gelu_new"`):
-            Activation function, to be selected in the list `["relu", "silu", "gelu", "tanh", "gelu_new"]`.
-        resid_pdrop (`float`, *optional*, defaults to 0.1):
-            The dropout probability for all fully connected layers in the embeddings, encoder, and pooler.
-        embd_pdrop (`int`, *optional*, defaults to 0.1):
-            The dropout ratio for the embeddings.
-        attn_pdrop (`float`, *optional*, defaults to 0.1):
-            The dropout ratio for the attention.
-        layer_norm_epsilon (`float`, *optional*, defaults to 1e-5):
-            The epsilon to use in the layer normalization layers.
+        type_vocab_size (`int`, *optional*, defaults to 2):
+            The vocabulary size of the `token_type_ids` passed when calling [`GPTNeoModel`].
         initializer_range (`float`, *optional*, defaults to 0.02):
             The standard deviation of the truncated_normal_initializer for initializing all weight matrices.
+        layer_norm_epsilon (`float`, *optional*, defaults to 1e-5):
+            The epsilon used by the layer normalization layers.
         use_cache (`bool`, *optional*, defaults to `True`):
-            Whether or not the model should return the last key/values attentions (not used by all models).
-
+            Whether or not the model should return the last key/values attentions (not used by all models). Only
+            relevant if `config.is_decoder=True`.
     Example:
-
     ```python
-    >>> from transformers import GPTJModel, GPTJConfig
-
-    >>> # Initializing a GPT-J 6B configuration
-    >>> configuration = GPTJConfig()
-
-    >>> # Initializing a model from the configuration
-    >>> model = GPTJModel(configuration)
-
+    >>> from transformers import GPTNeoConfig, GPTNeoModel
+    >>> # Initializing a GPTNeo EleutherAI/gpt-neo-1.3B style configuration
+    >>> configuration = GPTNeoConfig()
+    >>> # Initializing a model (with random weights) from the EleutherAI/gpt-neo-1.3B style configuration
+    >>> model = GPTNeoModel(configuration)
     >>> # Accessing the model configuration
     >>> configuration = model.config
     ```"""
-    model_type = "gptj"
-    attribute_map = {
-        "max_position_embeddings": "n_positions",
-        "hidden_size": "n_embd",
-        "num_attention_heads": "n_head",
-        "num_hidden_layers": "n_layer",
-    }
+    model_type = "gpt_neo"
+    keys_to_ignore_at_inference = ["past_key_values"]
+    attribute_map = {"num_attention_heads": "num_heads", "num_hidden_layers": "num_layers"}
 
     def __init__(
         self,
-        vocab_size=50400,
-        n_positions=2048,
-        n_embd=4096,
-        n_layer=28,
-        n_head=16,
-        rotary_dim=64,
-        n_inner=None,
+        vocab_size=50257,
+        max_position_embeddings=2048,
+        hidden_size=2048,
+        num_layers=24,
+        attention_types=[[["global", "local"], 12]],
+        num_heads=16,
+        intermediate_size=None,
+        window_size=256,
         activation_function="gelu_new",
-        resid_pdrop=0.0,
-        embd_pdrop=0.0,
-        attn_pdrop=0.0,
+        resid_dropout=0.0,
+        embed_dropout=0.0,
+        attention_dropout=0.0,
         layer_norm_epsilon=1e-5,
         initializer_range=0.02,
         use_cache=True,
         bos_token_id=50256,
         eos_token_id=50256,
-        tie_word_embeddings=False,
         **kwargs,
     ):
         self.vocab_size = vocab_size
-        self.n_positions = n_positions
-        self.n_embd = n_embd
-        self.n_layer = n_layer
-        self.n_head = n_head
-        self.n_inner = n_inner
-        self.rotary_dim = rotary_dim
+        self.max_position_embeddings = max_position_embeddings
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.intermediate_size = intermediate_size
+        self.window_size = window_size
         self.activation_function = activation_function
-        self.resid_pdrop = resid_pdrop
-        self.embd_pdrop = embd_pdrop
-        self.attn_pdrop = attn_pdrop
+        self.resid_dropout = resid_dropout
+        self.embed_dropout = embed_dropout
+        self.attention_dropout = attention_dropout
         self.layer_norm_epsilon = layer_norm_epsilon
         self.initializer_range = initializer_range
         self.use_cache = use_cache
@@ -132,25 +128,80 @@ class GPTJConfig(PretrainedConfig):
         self.bos_token_id = bos_token_id
         self.eos_token_id = eos_token_id
 
-        super().__init__(
-            bos_token_id=bos_token_id, eos_token_id=eos_token_id, tie_word_embeddings=tie_word_embeddings, **kwargs
-        )
+        # @Beyondo: For TF-compatibility
+        self.n_positions = max_position_embeddings
+        self.n_embd = hidden_size
+        self.n_layer = num_layers
+        self.n_head = num_heads
+        self.n_inner = intermediate_size
+        self.rotary_dim = window_size
+        self.resid_pdrop = resid_dropout
+        self.embd_pdrop = embed_dropout
+        self.attn_pdrop = attention_dropout
+        #
+        
+        self.attention_types = attention_types
+        self.attention_layers = self.expand_attention_types_params(attention_types)
+
+        if len(self.attention_layers) != self.num_layers:
+            raise ValueError(
+                "Configuration for convolutional module is incorrect. "
+                "It is required that `len(config.attention_layers)` == `config.num_layers` "
+                f"but is `len(config.attention_layers) = {len(self.attention_layers)}`, "
+                f"`config.num_layers = {self.num_layers}`. "
+                "`config.attention_layers` is prepared using `config.attention_types`. "
+                "Please verify the value of `config.attention_types` argument."
+            )
+
+        super().__init__(bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
+
+    @staticmethod
+    def expand_attention_types_params(attention_types):
+        attentions = []
+        for item in attention_types:
+            for _ in range(item[1]):
+                attentions.extend(item[0])
+        return attentions
 
 
-# Copied from transformers.models.gpt2.configuration_gpt2.GPT2OnnxConfig
-class GPTJOnnxConfig(OnnxConfigWithPast):
-    def __init__(
-        self,
-        config: PretrainedConfig,
-        task: str = "default",
-        patching_specs: List[PatchingSpec] = None,
-        use_past: bool = False,
-    ):
-        super().__init__(config, task=task, patching_specs=patching_specs, use_past=use_past)
-        if not getattr(self._config, "pad_token_id", None):
-            # TODO: how to do that better?
-            self._config.pad_token_id = 0
+def custom_unfold(input, dimension, size, step):
+    """Custom torch.Tensor.unfold implementation to enable the export to ONNX."""
+    import torch
 
+    shape = input.size()
+    rank = len(shape)
+    sizedim = shape[dimension]
+
+    low_indices = torch.arange(0, sizedim, step)
+    min_length = torch.div(sizedim - size, step, rounding_mode="floor") + 1
+    indices = torch.arange(size) + low_indices[:min_length][:, None]
+
+    s = [slice(None)] * rank
+    s[dimension] = indices
+    sliced = input[s]
+
+    perm = list(range(0, rank + 1))
+    perm.append(perm.pop(dimension + 1))
+
+    return sliced.permute(perm)
+
+
+def custom_get_block_length_and_num_blocks(seq_length, window_size):
+    """
+    Custom implementation for GPTNeoAttentionMixin._get_block_length_and_num_blocks to enable the export to ONNX as
+    original implementation uses Python variables and control flow.
+    """
+    import torch
+
+    candidates = torch.arange(1, window_size)
+    remainders = torch.remainder(seq_length, candidates)
+    divisor_indices = remainders == 0
+    divisors = candidates[divisor_indices]
+    largest_divisor = torch.max(divisors)
+    return largest_divisor, torch.div(seq_length, largest_divisor, rounding_mode="floor")
+
+
+class GPTNeoOnnxConfig(OnnxConfigWithPast):
     @property
     def inputs(self) -> Mapping[str, Mapping[int, str]]:
         common_inputs = OrderedDict({"input_ids": {0: "batch", 1: "sequence"}})
@@ -163,12 +214,8 @@ class GPTJOnnxConfig(OnnxConfigWithPast):
         return common_inputs
 
     @property
-    def num_layers(self) -> int:
-        return self._config.n_layer
-
-    @property
     def num_attention_heads(self) -> int:
-        return self._config.n_head
+        return self._config.num_heads
 
     def generate_dummy_inputs(
         self,

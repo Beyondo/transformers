@@ -45,13 +45,13 @@ from ...modeling_tf_utils import (
 )
 from ...tf_utils import shape_list, stable_softmax
 from ...utils import logging
-from .configuration_gptj import GPTJConfig
+from .configuration_gptj import GPTNeoConfig
 
 
 logger = logging.get_logger(__name__)
 
 _CHECKPOINT_FOR_DOC = "EleutherAI/gpt-j-6B"
-_CONFIG_FOR_DOC = "GPTJConfig"
+_CONFIG_FOR_DOC = "GPTNeoConfig"
 
 GPTJ_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "EleutherAI/gpt-j-6B",
@@ -82,7 +82,7 @@ def apply_rotary_pos_emb(tensor: tf.Tensor, sincos: tf.Tensor) -> tf.Tensor:
 
 
 class TFGPTJAttention(tf.keras.layers.Layer):
-    def __init__(self, config: GPTJConfig, **kwargs):
+    def __init__(self, config: GPTNeoConfig, **kwargs):
         super().__init__(**kwargs)
 
         self.embed_dim = config.hidden_size
@@ -268,7 +268,7 @@ class TFGPTJAttention(tf.keras.layers.Layer):
 
 
 class TFGPTJMLP(tf.keras.layers.Layer):
-    def __init__(self, intermediate_size: int, config: GPTJConfig, **kwargs):
+    def __init__(self, intermediate_size: int, config: GPTNeoConfig, **kwargs):
         super().__init__(**kwargs)
         embed_dim = config.n_embd
 
@@ -291,7 +291,7 @@ class TFGPTJMLP(tf.keras.layers.Layer):
 
 
 class TFGPTJBlock(tf.keras.layers.Layer):
-    def __init__(self, config: GPTJConfig, **kwargs):
+    def __init__(self, config: GPTNeoConfig, **kwargs):
         super().__init__(**kwargs)
         inner_dim = config.n_inner if config.n_inner is not None else 4 * config.n_embd
         self.ln_1 = tf.keras.layers.LayerNormalization(epsilon=config.layer_norm_epsilon, name="ln_1")
@@ -334,9 +334,9 @@ class TFGPTJBlock(tf.keras.layers.Layer):
 
 @keras_serializable
 class TFGPTJMainLayer(tf.keras.layers.Layer):
-    config_class = GPTJConfig
+    config_class = GPTNeoConfig
 
-    def __init__(self, config: GPTJConfig, *inputs, **kwargs):
+    def __init__(self, config: GPTNeoConfig, *inputs, **kwargs):
         super().__init__(*inputs, **kwargs)
 
         self.config = config
@@ -515,7 +515,7 @@ class TFGPTJPreTrainedModel(TFPreTrainedModel):
     models.
     """
 
-    config_class = GPTJConfig
+    config_class = GPTNeoConfig
     base_model_prefix = "transformer"
     # names with a '.' represents the authorized unexpected/missing layers when a TF model is loaded from a PT model
     _keys_to_ignore_on_load_unexpected = [r"h.\d+.attn.bias"]
@@ -582,7 +582,7 @@ GPTJ_START_DOCSTRING = r"""
     </Tip>
 
     Parameters:
-        config ([`GPTJConfig`]): Model configuration class with all the parameters of the model.
+        config ([`GPTNeoConfig`]): Model configuration class with all the parameters of the model.
             Initializing with a config file does not load the weights associated with the model, only the
             configuration. Check out the [`~TFPreTrainedModel.from_pretrained`] method to load the model weights.
 """
