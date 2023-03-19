@@ -53,7 +53,7 @@ logger = logging.get_logger(__name__)
 _CHECKPOINT_FOR_DOC = "EleutherAI/gpt-neo-1.3B"
 _CONFIG_FOR_DOC = "GPTNeoConfig"
 
-GPTNeo_PRETRAINED_MODEL_ARCHIVE_LIST = [
+GPT_NEO_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "EleutherAI/gpt-neo-1.3B",
     # See all GPT-Neo models at https://huggingface.co/models?filter=gpt_neo
 ]
@@ -665,7 +665,7 @@ GPT_NEO_INPUTS_DOCSTRING = r"""
 
 @add_start_docstrings(
     "The bare GPT-Neo Model transformer outputting raw hidden-states without any specific head on top.",
-    GPTNeo_START_DOCSTRING,
+    GPT_NEO_START_DOCSTRING,
 )
 class TFGPTNeoModel(TFGPTNeoPreTrainedModel):
     def __init__(self, config, *inputs, **kwargs):
@@ -673,7 +673,7 @@ class TFGPTNeoModel(TFGPTNeoPreTrainedModel):
         self.transformer = TFGPTNeoMainLayer(config, name="transformer")
 
     @unpack_inputs
-    @add_start_docstrings_to_model_forward(GPTNeo_INPUTS_DOCSTRING)
+    @add_start_docstrings_to_model_forward(GPT_NEO_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=TFBaseModelOutputWithPast,
@@ -734,7 +734,7 @@ class TFGPTNeoModel(TFGPTNeoPreTrainedModel):
     """
     The GPT-Neo Model transformer with a language modeling head on top.
     """,
-    GPTNeo_START_DOCSTRING,
+    GPT_NEO_START_DOCSTRING,
 )
 class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss):
     _keys_to_ignore_on_load_missing = [
@@ -893,7 +893,7 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
     padding tokens when `inputs_embeds` are passed instead of `input_ids`, it does the same (take the last value in
     each row of the batch).
     """,
-    GPTNeo_START_DOCSTRING,
+    GPT_NEO_START_DOCSTRING,
 )
 class TFGPTNeoForSequenceClassification(TFGPTNeoPreTrainedModel, TFSequenceClassificationLoss):
     _keys_to_ignore_on_load_missing = [r"h.\d+.attn.masked_bias", r"h.\d+.attn.bias", r"lm_head.weight"]
@@ -910,7 +910,7 @@ class TFGPTNeoForSequenceClassification(TFGPTNeoPreTrainedModel, TFSequenceClass
         )
 
     @unpack_inputs
-    @add_start_docstrings_to_model_forward(GPTNeo_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @add_start_docstrings_to_model_forward(GPT_NEO_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=TFSequenceClassifierOutputWithPast,
@@ -1018,7 +1018,7 @@ class TFGPTNeoForSequenceClassification(TFGPTNeoPreTrainedModel, TFSequenceClass
     The GPT-Neo Model transformer with a span classification head on top for extractive question-answering tasks like
     SQuAD (a linear layers on top of the hidden-states output to compute `span start logits` and `span end logits`).
     """,
-    GPTNeo_START_DOCSTRING,
+    GPT_NEO_START_DOCSTRING,
 )
 class TFGPTNeoForQuestionAnswering(TFGPTNeoPreTrainedModel, TFQuestionAnsweringLoss):
     _keys_to_ignore_on_load_missing = [r"h.\d+.attn.masked_bias", r"h.\d+.attn.bias", r"lm_head.weight"]
@@ -1032,7 +1032,7 @@ class TFGPTNeoForQuestionAnswering(TFGPTNeoPreTrainedModel, TFQuestionAnsweringL
         )
 
     @unpack_inputs
-    @add_start_docstrings_to_model_forward(GPTNeo_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
+    @add_start_docstrings_to_model_forward(GPT_NEO_INPUTS_DOCSTRING.format("batch_size, sequence_length"))
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
         output_type=TFQuestionAnsweringModelOutput,
