@@ -172,6 +172,7 @@ TF_MODEL_FOR_CAUSAL_LM_MAPPING_NAMES = OrderedDict(
         ("ctrl", "TFCTRLLMHeadModel"),
         ("gpt-sw3", "TFGPT2LMHeadModel"),
         ("gpt2", "TFGPT2LMHeadModel"),
+        ("gpt_neo", "TFGPTNeoForCausalLM"),
         ("gptj", "TFGPTJForCausalLM"),
         ("openai-gpt", "TFOpenAIGPTLMHeadModel"),
         ("opt", "TFOPTForCausalLM"),
