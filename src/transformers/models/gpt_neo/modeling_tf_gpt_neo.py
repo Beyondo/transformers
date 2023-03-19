@@ -45,7 +45,7 @@ from ...modeling_tf_utils import (
 )
 from ...tf_utils import shape_list, stable_softmax
 from ...utils import logging
-from .configuration_GPTNeo import GPTNeoConfig
+from .configuration_gpt_neo import GPTNeoConfig
 
 
 logger = logging.get_logger(__name__)
