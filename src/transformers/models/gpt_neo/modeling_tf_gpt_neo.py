@@ -29,7 +29,6 @@ from ...file_utils import (
 from ...modeling_tf_outputs import (
     TFBaseModelOutputWithPast,
     TFCausalLMOutputWithPast,
-    CausalLMOutputWithCrossAttentions,
     TFQuestionAnsweringModelOutput,
     TFSequenceClassifierOutputWithPast,
 )
@@ -748,11 +747,10 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
     def __init__(self, config: GPTNeoConfig, *inputs, **kwargs):
         super().__init__(config, *inputs, **kwargs)
         self.transformer = TFGPTNeoModel(config)
-        self.lm_head = tf.keras.layers.Dense(
-            config.vocab_size,
-            kernel_initializer=get_initializer(config.initializer_range),
-            name="lm_head",
-        )
+        self.lm_head = tf.keras.layers.Dense(config.vocab_size, name="lm_head")
+
+        # Initialize weights and apply final processing
+        self.post_init()
 
     def get_output_embeddings(self):
         return self.lm_head
@@ -792,7 +790,7 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
     @add_start_docstrings_to_model_forward(GPT_NEO_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=CausalLMOutputWithCrossAttentions,
+        output_type=TFCausalLMOutputWithPast,
         config_class=_CONFIG_FOR_DOC,
     )
     def call(
@@ -846,7 +844,7 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
             shift_labels = labels[..., 1:]
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
-            loss = loss_fct(shift_logits.view(-1, shift_logits.shape[-1]), shift_labels.view(-1))
+            loss = loss_fct(shift_logits.reshape(-1, shift_logits.shape[-1]), shift_labels.reshape(-1))
 
             lm_logits = tf.cast(lm_logits, hidden_states.dtype)
             loss = tf.cast(loss, hidden_states.dtype)
@@ -855,7 +853,7 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
             output = (lm_logits,) + transformer_outputs[1:]
             return ((loss,) + output) if loss is not None else output
 
-        return CausalLMOutputWithPast(
+        return TFCausalLMOutputWithPast(
             loss=loss,
             logits=lm_logits,
             past_key_values=transformer_outputs.past_key_values,
@@ -864,21 +862,11 @@ class TFGPTNeoForCausalLM(TFGPTNeoPreTrainedModel, TFCausalLanguageModelingLoss)
         )
 
     def serving_output(self, output):
-        return output.logits
+        pkv = tf.convert_to_tensor(output.past_key_values) if self.config.use_cache else None
+        hs = tf.convert_to_tensor(output.hidden_states) if self.config.output_hidden_states else None
+        attns = tf.convert_to_tensor(output.attentions) if self.config.output_attentions else None
 
-    @staticmethod
-    def _reorder_cache(
-        past_key_values: Tuple[Tuple[tf.Tensor]], beam_idx: tf.Tensor
-    ) -> Tuple[Tuple[tf.Tensor]]:
-        """
-        This function is used to re-order the `past_key_values` cache if [`~PretrainedModel.beam_search`] or
-        [`~PretrainedModel.beam_sample`] is called. This is required to match `past_key_values` with the correct
-        beam_idx at every generation step.
-        """
-        return tuple(
-            tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past)
-            for layer_past in past_key_values
-        )
+        return TFCausalLMOutputWithPast(logits=output.logits, past_key_values=pkv, hidden_states=hs, attentions=attns)
 
 
 @add_start_docstrings(
