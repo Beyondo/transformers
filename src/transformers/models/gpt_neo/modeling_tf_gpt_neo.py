@@ -317,19 +317,20 @@ class TFGPTNeoMLP(tf.keras.layers.Layer):
 
 
 class TFGPTNeoBlock(tf.keras.layers.Layer):
-    def __init__(self, config: GPTNeoConfig, **kwargs):
+    def __init__(self, config: GPTNeoConfig, layer_id: int, **kwargs):
         super().__init__(**kwargs)
-        inner_dim = config.n_inner if config.n_inner is not None else 4 * config.n_embd
+        hidden_size = config.hidden_size
+        inner_dim = config.intermediate_size if config.intermediate_size is not None else 4 * hidden_size
         self.ln_1 = tf.keras.layers.LayerNormalization(epsilon=config.layer_norm_epsilon, name="ln_1")
-        self.attn = TFGPTNeoAttention(config, name="attn")
-        self.mlp = TFGPTNeoMLP(inner_dim, config, name="mlp")
+        self.attn = TFGPTNeoAttention(config, layer_id)
+        self.ln_2 = tf.keras.layers.LayerNormalization(epsilon=config.layer_norm_epsilon, name="ln_2")
+        self.mlp = TFGPTNeoMLP(inner_dim, config)
 
     def call(
         self,
         hidden_states: tf.Tensor,
-        layer_past: Optional[tf.Tensor] = None,
+        layer_past: Optional[Tuple[tf.Tensor, tf.Tensor]] = None,
         attention_mask: Optional[tf.Tensor] = None,
-        position_ids: Optional[tf.Tensor] = None,
         head_mask: Optional[tf.Tensor] = None,
         use_cache: bool = False,
         output_attentions: bool = False,
@@ -337,25 +338,30 @@ class TFGPTNeoBlock(tf.keras.layers.Layer):
         residual = hidden_states
         hidden_states = self.ln_1(hidden_states)
         attn_outputs = self.attn(
-            hidden_states=hidden_states,
+            hidden_states,
             layer_past=layer_past,
             attention_mask=attention_mask,
-            position_ids=position_ids,
             head_mask=head_mask,
             use_cache=use_cache,
             output_attentions=output_attentions,
-        )  # attn_outputs: attn_output, present, (attentions)
-        attn_output = attn_outputs[0]
+        )
+        attn_output = attn_outputs[0]  # output_attn: a, present, (attentions)
         outputs = attn_outputs[1:]
+        # residual connection
+        hidden_states = attn_output + residual
 
+        residual = hidden_states
+        hidden_states = self.ln_2(hidden_states)
         feed_forward_hidden_states = self.mlp(hidden_states)
-        hidden_states = attn_output + feed_forward_hidden_states + residual
+        # residual connection
+        hidden_states = residual + feed_forward_hidden_states
 
         if use_cache:
             outputs = (hidden_states,) + outputs
         else:
             outputs = (hidden_states,) + outputs[1:]
-        return outputs  # hidden_states, present, (attentions)
+
+        return outputs  # hidden_states, present, (attentions, cross_attentions)
 
 
 @keras_serializable
