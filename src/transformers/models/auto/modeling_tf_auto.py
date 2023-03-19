@@ -305,6 +305,7 @@ TF_MODEL_FOR_SEQUENCE_CLASSIFICATION_MAPPING_NAMES = OrderedDict(
         ("funnel", "TFFunnelForSequenceClassification"),
         ("gpt-sw3", "TFGPT2ForSequenceClassification"),
         ("gpt2", "TFGPT2ForSequenceClassification"),
+        ("gpt_neo", "TFGPTNeoForSequenceClassification"),
         ("gptj", "TFGPTJForSequenceClassification"),
         ("layoutlm", "TFLayoutLMForSequenceClassification"),
         ("layoutlmv3", "TFLayoutLMv3ForSequenceClassification"),
