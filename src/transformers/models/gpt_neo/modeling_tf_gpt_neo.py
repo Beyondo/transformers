@@ -29,6 +29,7 @@ from ...file_utils import (
 from ...modeling_tf_outputs import (
     TFBaseModelOutputWithPast,
     TFCausalLMOutputWithPast,
+    CausalLMOutputWithCrossAttentions
     TFQuestionAnsweringModelOutput,
     TFSequenceClassifierOutputWithPast,
 )
